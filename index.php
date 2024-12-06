@@ -1,117 +1,104 @@
 <?php
-// اتصال به دیتابیس
-$servername = "licenses";
-$username = "root";
-$password = "Tsf6jrThPTPRUA6f8cAbYEJg";
-$dbname = "ecstatic_driscoll";
+// اطلاعات اتصال به دیتابیس
+$host = 'licenses'; // آدرس سرور
+$dbname = 'ecstatic_driscoll'; // نام دیتابیس
+$username = 'root'; // نام کاربری
+$password = '7AV7xkXbROrKjsQAAb2RylgX'; // پسورد
 
-// اتصال به دیتابیس
-$conn = mysqli_connect($servername, $username, $password, $dbname);
+// تلاش برای اتصال به دیتابیس
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    // تنظیم ویژگی‌ها برای مدیریت ارور‌ها
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    // پرس و جو به دیتابیس برای گرفتن داده‌ها از جدول 'lic'
+    $stmt = $pdo->query("SELECT * FROM lic");
 
-// چک کردن اتصال
-if (!$conn) {
-    die("اتصال به دیتابیس موفقیت‌آمیز نبود: " . mysqli_connect_error());
-}
+    // شروع HTML
+    echo "<!DOCTYPE html>
+    <html lang='fa'>
+    <head>
+        <meta charset='UTF-8'>
+        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+        <title>داده‌های جدول lic</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                color: #333;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+            }
+            .container {
+                width: 80%;
+                background-color: #fff;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                padding: 20px;
+            }
+            h1 {
+                text-align: center;
+                color: #007BFF;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            table, th, td {
+                border: 1px solid #ddd;
+            }
+            th, td {
+                padding: 12px;
+                text-align: center;
+            }
+            th {
+                background-color: #007BFF;
+                color: white;
+            }
+            tr:nth-child(even) {
+                background-color: #f2f2f2;
+            }
+            .no-data {
+                text-align: center;
+                color: #ff0000;
+            }
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <h1>داده‌های جدول lic</h1>";
 
-// عملیات نمایش داده‌ها
-$query = "SELECT * FROM lic";
-$result = mysqli_query($conn, $query);
-
-// عملیات ویرایش داده‌ها
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_id'])) {
-    $id = $_POST['edit_id'];
-    $name = $_POST['name'];
-    $update_query = "UPDATE lic SET name = '$name' WHERE id = $id";
-    mysqli_query($conn, $update_query);
-    header('Location: index.php'); // ریدایرکت برای بارگزاری مجدد
-}
-
-// عملیات حذف داده‌ها
-if (isset($_GET['delete_id'])) {
-    $delete_id = $_GET['delete_id'];
-    $delete_query = "DELETE FROM lic WHERE id = $delete_id";
-    mysqli_query($conn, $delete_query);
-    header('Location: index.php'); // ریدایرکت بعد از حذف
-}
-
-// عملیات ورود کاربر (برای نمایش صفحه اصلی)
-$logged_in = false; // فرض بر این است که کاربر هنوز وارد نشده
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['username']) && isset($_POST['password'])) {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-    if ($username == "admin" && $password == "admin123") {  // این‌جا باید اعتبارسنجی واقعی انجام بشه
-        $logged_in = true;
+    // نمایش داده‌ها
+    if ($stmt->rowCount() > 0) {
+        echo "<table>
+                <tr>
+                    <th>ID</th>
+                    <th>Data</th>
+                </tr>";
+        // اگر رکوردها وجود داشته باشن، نمایش داده می‌شن
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            echo "<tr>
+                    <td>" . $row['id'] . "</td>
+                    <td>" . $row['data'] . "</td>
+                  </tr>";
+        }
+        echo "</table>";
+    } else {
+        echo "<p class='no-data'>هیچ داده‌ای پیدا نشد.</p>";
     }
+
+    // پایان HTML
+    echo "</div>
+    </body>
+    </html>";
+
+} catch (PDOException $e) {
+    // در صورت بروز خطا در اتصال
+    echo "اتصال به دیتابیس با خطا مواجه شد: " . $e->getMessage();
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="fa">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>پنل مدیریت دیتابیس</title>
-    <link rel="stylesheet" href="assets/style.css">
-</head>
-<body>
-    <!-- صفحه ورود -->
-    <?php if (!$logged_in): ?>
-        <div class="login-container">
-            <h2>ورود به پنل مدیریت دیتابیس</h2>
-            <form action="index.php" method="POST">
-                <input type="text" name="username" placeholder="نام کاربری" required>
-                <input type="password" name="password" placeholder="کلمه عبور" required>
-                <button type="submit">ورود</button>
-            </form>
-        </div>
-    <?php else: ?>
-        <!-- داشبورد -->
-        <div class="dashboard-container">
-            <h2>داشبورد مدیریت دیتابیس</h2>
-            <a href="#view-database">مشاهده دیتابیس</a>
-            <a href="#edit-database">ویرایش دیتابیس</a>
-
-            <!-- مشاهده دیتابیس -->
-            <div id="view-database">
-                <h3>مشاهده داده‌ها</h3>
-                <table>
-                    <tr>
-                        <th>ID</th>
-                        <th>نام</th>
-                        <th>عملیات</th>
-                    </tr>
-                    <?php while($row = mysqli_fetch_assoc($result)): ?>
-                        <tr>
-                            <td><?php echo $row['id']; ?></td>
-                            <td><?php echo $row['name']; ?></td>
-                            <td>
-                                <a href="#edit-database?id=<?php echo $row['id']; ?>">ویرایش</a>
-                                <a href="index.php?delete_id=<?php echo $row['id']; ?>">حذف</a>
-                            </td>
-                        </tr>
-                    <?php endwhile; ?>
-                </table>
-            </div>
-
-            <!-- ویرایش دیتابیس -->
-            <?php if (isset($_GET['id'])): ?>
-                <div id="edit-database">
-                    <?php
-                    $edit_id = $_GET['id'];
-                    $edit_query = "SELECT * FROM your_table_name WHERE id = $edit_id";
-                    $edit_result = mysqli_query($conn, $edit_query);
-                    $edit_row = mysqli_fetch_assoc($edit_result);
-                    ?>
-                    <h3>ویرایش داده</h3>
-                    <form action="index.php" method="POST">
-                        <input type="hidden" name="edit_id" value="<?php echo $edit_row['id']; ?>">
-                        <input type="text" name="name" value="<?php echo $edit_row['name']; ?>" required>
-                        <button type="submit">ویرایش</button>
-                    </form>
-                </div>
-            <?php endif; ?>
-        </div>
-    <?php endif; ?>
-
-</body>
-</html>
