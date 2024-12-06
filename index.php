@@ -1,9 +1,9 @@
 <?php
 // اتصال به دیتابیس
-$servername = "localhost";
+$servername = "licenses";
 $username = "root";
-$password = "your_password";
-$dbname = "your_database";
+$password = "Tsf6jrThPTPRUA6f8cAbYEJg";
+$dbname = "ecstatic_driscoll";
 
 // اتصال به دیتابیس
 $conn = mysqli_connect($servername, $username, $password, $dbname);
@@ -14,14 +14,14 @@ if (!$conn) {
 }
 
 // عملیات نمایش داده‌ها
-$query = "SELECT * FROM your_table_name";
+$query = "SELECT * FROM lic";
 $result = mysqli_query($conn, $query);
 
 // عملیات ویرایش داده‌ها
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_id'])) {
     $id = $_POST['edit_id'];
     $name = $_POST['name'];
-    $update_query = "UPDATE your_table_name SET name = '$name' WHERE id = $id";
+    $update_query = "UPDATE lic SET name = '$name' WHERE id = $id";
     mysqli_query($conn, $update_query);
     header('Location: index.php'); // ریدایرکت برای بارگزاری مجدد
 }
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_id'])) {
 // عملیات حذف داده‌ها
 if (isset($_GET['delete_id'])) {
     $delete_id = $_GET['delete_id'];
-    $delete_query = "DELETE FROM your_table_name WHERE id = $delete_id";
+    $delete_query = "DELETE FROM lic WHERE id = $delete_id";
     mysqli_query($conn, $delete_query);
     header('Location: index.php'); // ریدایرکت بعد از حذف
 }
